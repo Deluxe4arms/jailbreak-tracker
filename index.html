@@ -173,6 +173,7 @@
         <h2 id="hudTitle">Acquiring signal…</h2>
         <p id="hudDetail">Checking public jailbreak charts and merging them with the full iOS version catalog.</p>
         <div class="meta">Last checked: <span id="checked">—</span></div>
+        <div class="meta">Page views: <span id="views">—</span></div>
         <button type="button" id="refresh">Refresh now</button>
       </div>
     </section>
@@ -463,8 +464,29 @@
       }
       resize(); addEventListener("resize", resize); tick();
     })();
+    async function loadViews() {
+      const url = "https://hits.dwyl.com/deluxe4arms/jailbreak-tracker.json";
+      const attempts = [
+        "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+        "https://corsproxy.io/?" + encodeURIComponent(url)
+      ];
+      for (const attempt of attempts) {
+        try {
+          const res = await fetch(attempt, { cache: "no-store" });
+          if (!res.ok) continue;
+          const data = JSON.parse(await res.text());
+          const n = Number(String(data.message || data.count || "").replace(/,/g, ""));
+          if (Number.isFinite(n) && n >= 0) {
+            $("views").textContent = n.toLocaleString();
+            return;
+          }
+        } catch (e) {}
+      }
+      $("views").textContent = "unavailable";
+    }
     $("refresh").addEventListener("click", refresh);
     paint(VERSION_CATALOG.map(fallbackFor));
+    loadViews();
     refresh();
   </script>
 </body>
