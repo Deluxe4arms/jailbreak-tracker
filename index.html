@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>A12 / A12X Signal Tracker</title>
+  <meta name="description" content="Cyberpunk jailbreak status tracker for A12 and A12X chips. Groups jailbreakable and unsupported iOS versions, led by 27.01.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JB Tracker">
+  <meta name="theme-color" content="#05010d">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22A12%20Signal%20Tracker%22%2C%22short_name%22%3A%22JB%20Tracker%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305010d%22%2C%22theme_color%22%3A%22%2305010d%22%2C%22start_url%22%3A%22.%22%7D">
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap");
+    :root {
+      --bg: #05010d;
+      --panel: rgba(8, 6, 22, .78);
+      --cyan: #00f3ff;
+      --magenta: #ff2bd6;
+      --lime: #39ff88;
+      --ink: #e8f7ff;
+      --muted: #8b90b8;
+      --danger: #ff4d6d;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--ink);
+      background: #05010d;
+      overflow-x: hidden;
+    }
+    #fx {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    .aurora {
+      position: fixed; inset: -20%;
+      z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255, 43, 214, .22), transparent 36%),
+        radial-gradient(circle at 85% 0%, rgba(0, 243, 255, .18), transparent 32%),
+        radial-gradient(circle at 50% 110%, rgba(57, 255, 136, .1), transparent 40%);
+      animation: drift 16s ease-in-out infinite alternate;
+      filter: blur(8px);
+    }
+    @keyframes drift {
+      from { transform: translate3d(-2%, -1%, 0) scale(1); }
+      to { transform: translate3d(2%, 2%, 0) scale(1.06); }
+    }
+    main {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto;
+      padding: calc(22px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));
+    }
+    .topline {
+      display: flex; justify-content: space-between; gap: 12px;
+      align-items: baseline; margin-bottom: 8px;
+      color: var(--cyan); letter-spacing: .18em; font-size: .72rem;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-family: Orbitron, sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.4rem, 4vw, 2.15rem);
+      letter-spacing: .04em;
+      margin: 0 0 .4rem;
+      text-shadow: 0 0 18px rgba(0, 243, 255, .45), 0 0 28px rgba(255, 43, 214, .25);
+    }
+    .lede { color: var(--muted); margin: 0 0 1.2rem; line-height: 1.5; }
+    .hud {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 22px;
+      padding: 22px;
+      border: 1px solid rgba(0, 243, 255, .28);
+      background:
+        linear-gradient(180deg, rgba(12, 10, 34, .92), rgba(7, 4, 20, .88));
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px rgba(255, 43, 214, .12), 0 0 40px rgba(0, 243, 255, .08);
+      position: relative;
+      overflow: hidden;
+    }
+    .hud::before {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0 3px,
+        rgba(0, 243, 255, .03) 3px 4px
+      );
+      animation: scan 7s linear infinite;
+    }
+    @keyframes scan { to { background-position: 0 80px; } }
+    @media (max-width: 700px) { .hud { grid-template-columns: 1fr; justify-items: center; } }
+
+    .radar-wrap { position: relative; width: 210px; height: 210px; }
+    .radar {
+      width: 210px; height: 210px; border-radius: 50%;
+      border: 1px solid rgba(0, 243, 255, .4);
+      box-shadow:
+        0 0 24px rgba(0, 243, 255, .18),
+        inset 0 0 30px rgba(255, 43, 214, .12);
+      position: relative; overflow: hidden;
+      background:
+        repeating-radial-gradient(circle at 50% 50%, transparent 0 26px, rgba(0, 243, 255, .12) 27px 28px),
+        radial-gradient(circle at 50% 50%, rgba(8, 16, 32, .2), rgba(2, 0, 10, .92));
+    }
+    .sweep {
+      position: absolute; inset: 0;
+      background: conic-gradient(from 0deg, transparent 0 72%, rgba(0, 243, 255, .0) 78%, rgba(0, 243, 255, .55) 100%);
+      animation: spin 2.8s linear infinite;
+    }
+    .pulse {
+      position: absolute; inset: 18%;
+      border: 1px solid rgba(255, 43, 214, .7);
+      border-radius: 50%;
+      animation: ping 2.2s ease-out infinite;
+    }
+    .radar-core {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      text-align: center; padding: 24px;
+      font-family: Orbitron, sans-serif;
+      z-index: 2;
+    }
+    .radar-core strong {
+      display: block; font-size: .95rem; letter-spacing: .08em;
+      text-shadow: 0 0 12px currentColor;
+    }
+    .radar-core span { display: block; margin-top: 6px; font-size: .68rem; letter-spacing: .16em; color: var(--muted); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes ping {
+      0% { transform: scale(.55); opacity: .9; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+    .hud[data-state="none"] { --glow: var(--magenta); }
+    .hud[data-state="available"] { --glow: var(--lime); }
+    .hud[data-state="checking"] { --glow: var(--cyan); }
+    .hud[data-state="error"] { --glow: var(--danger); }
+    .hud[data-state="available"] .radar {
+      border-color: rgba(57, 255, 136, .7);
+      box-shadow: 0 0 28px rgba(57, 255, 136, .28), inset 0 0 36px rgba(57, 255, 136, .14);
+    }
+    .hud[data-state="available"] .sweep {
+      background: conic-gradient(from 0deg, transparent 0 70%, rgba(57, 255, 136, .55) 100%);
+    }
+    .hud[data-state="available"] .pulse { border-color: rgba(57, 255, 136, .85); animation: none; transform: scale(1); opacity: .65; }
+    .hud[data-state="available"] .radar-core strong { color: var(--lime); }
+    .hud[data-state="none"] .radar-core strong { color: var(--magenta); }
+    .hud[data-state="checking"] .radar-core strong { color: var(--cyan); }
+
+    .hud-copy h2 {
+      font-family: Orbitron, sans-serif;
+      font-size: 1.05rem; margin: 0 0 .5rem;
+      letter-spacing: .08em;
+    }
+    .hud-copy p { margin: 0; color: var(--muted); line-height: 1.45; }
+    .meta { margin-top: 16px; color: var(--cyan); font-size: .86rem; }
+    button {
+      appearance: none; border: 1px solid var(--cyan);
+      background: linear-gradient(90deg, rgba(0, 243, 255, .15), rgba(255, 43, 214, .12));
+      color: var(--ink);
+      font: inherit; letter-spacing: .14em; text-transform: uppercase;
+      padding: 12px 16px; min-height: 46px; margin-top: 16px; border-radius: 2px;
+      box-shadow: 0 0 16px rgba(0, 243, 255, .18);
+    }
+    button:disabled { opacity: .5; }
+
+    .boards {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;
+    }
+    @media (max-width: 700px) { .boards { grid-template-columns: 1fr; } }
+    .board {
+      border: 1px solid rgba(0, 243, 255, .2);
+      background: var(--panel);
+      padding: 14px;
+      min-height: 180px;
+    }
+    .board.yes { border-color: rgba(57, 255, 136, .35); box-shadow: 0 0 18px rgba(57, 255, 136, .08); }
+    .board.no { border-color: rgba(255, 43, 214, .28); }
+    .board h3 {
+      font-family: Orbitron, sans-serif;
+      font-size: .78rem; letter-spacing: .16em; margin: 0 0 10px;
+    }
+    .board.yes h3 { color: var(--lime); }
+    .board.no h3 { color: var(--magenta); }
+    .row {
+      display: flex; justify-content: space-between; gap: 10px;
+      align-items: baseline;
+      padding: 9px 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+      font-size: .92rem;
+    }
+    .ver { font-family: Orbitron, sans-serif; letter-spacing: .04em; }
+    .st { color: var(--muted); text-align: right; font-size: .78rem; }
+    .row a { color: var(--cyan); }
+    .empty { color: var(--muted); padding: 8px 0; }
+
+    .sources { margin-top: 18px; }
+    .sources h2 {
+      font-family: Orbitron, sans-serif;
+      font-size: .78rem; letter-spacing: .16em; color: var(--cyan);
+    }
+    .src {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06);
+      color: var(--muted); font-size: .84rem;
+    }
+    .src a { color: var(--cyan); }
+    .hint { margin-top: 16px; color: var(--muted); font-size: .8rem; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <canvas id="fx"></canvas>
+  <div class="aurora"></div>
+  <main>
+    <div class="topline"><span>A12 / A12X · SIGNAL WATCH</span><span>NO BACKEND</span></div>
+    <h1>JAILBREAK TRACKER</h1>
+    <p class="lede">Live-reads public charts for A12 and A12X chips, then splits every version it can determine into jailbreakable and unsupported. 27.01 is pinned as the current possible path; 26.5.2 and 26.0 stay in the unsupported group.</p>
+
+    <section class="hud" id="hud" data-state="checking">
+      <div class="radar-wrap">
+        <div class="radar">
+          <div class="sweep"></div>
+          <div class="pulse"></div>
+          <div class="radar-core">
+            <strong id="headline">SCANNING</strong>
+            <span id="subhead">PUBLIC SOURCES</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-copy">
+        <h2 id="hudTitle">Acquiring signal…</h2>
+        <p id="hudDetail">Checking the r/jailbreak wiki, The Apple Wiki jailbreak charts, AppleDB, and the Dopamine README.</p>
+        <div class="meta">Last checked: <span id="checked">—</span></div>
+        <button type="button" id="refresh">Refresh now</button>
+      </div>
+    </section>
+
+    <section class="boards">
+      <article class="board yes">
+        <h3>Jailbreakable</h3>
+        <div id="yesList"></div>
+      </article>
+      <article class="board no">
+        <h3>Not jailbreakable</h3>
+        <div id="noList"></div>
+      </article>
+    </section>
+
+    <section class="sources">
+      <h2>Sources</h2>
+      <div id="sourceList"></div>
+    </section>
+    <p class="hint">Open this file in Safari, tap Share, then Add to Home Screen to save it as a web clip. Fake “online jailbreak” sites are ignored. 27.01 is treated as the same release as 27.0.1.</p>
+  </main>
+  <script>
+    const PINNED_YES = { version: "27.01", aliases: ["27.01", "27.0.1"], label: "Supported · possible jailbreak path for A12 / A12X" };
+    const PINNED_NO = [
+      { version: "26.5.2", aliases: ["26.5.2"], label: "Not yet supported" },
+      { version: "26.0", aliases: ["26.0"], label: "Not yet supported" }
+    ];
+    const TOOL_NAMES = ["Dopamine", "palera1n", "meowbrek2", "XinaA15", "taurine", "odyssey", "unc0ver", "checkra1n", "chimera", "electra"];
+    const TOOL_LINKS = {
+      dopamine: "https://ellekit.space/dopamine/",
+      palera1n: "https://palera.in/",
+      meowbrek2: "https://theapplewiki.com/wiki/Meowbrek2",
+      xinaa15: "https://theapplewiki.com/wiki/XinaA15",
+      taurine: "https://taurine.app/",
+      odyssey: "https://theapplewiki.com/wiki/Odyssey",
+      unc0ver: "https://unc0ver.dev/",
+      checkra1n: "https://checkra.in/",
+      chimera: "https://theapplewiki.com/wiki/Chimera",
+      electra: "https://theapplewiki.com/wiki/Electra"
+    };
+    const A12_IDS = new Set([
+      "iPhone11,2","iPhone11,4","iPhone11,6","iPhone11,8",
+      "iPad11,1","iPad11,2","iPad11,3","iPad11,4","iPad11,6","iPad11,7",
+      "iPad8,1","iPad8,2","iPad8,3","iPad8,4","iPad8,5","iPad8,6","iPad8,7","iPad8,8"
+    ]);
+
+    const $ = (id) => document.getElementById(id);
+
+    function norm(v) {
+      const s = String(v).trim();
+      if (s === "27.01" || s === "27.0.1") return "27.01";
+      const m = s.match(/^(\d+)\.(\d+)(?:\.(\d+))?$/);
+      if (!m) return s;
+      return m[3] ? m[1] + "." + m[2] + "." + m[3] : m[1] + "." + m[2];
+    }
+    function parseVer(v) {
+      const n = norm(v);
+      if (n === "27.01") return [27, 0, 1];
+      const m = String(n).match(/^(\d+)\.(\d+)(?:\.(\d+))?$/);
+      return m ? [Number(m[1]), Number(m[2]), Number(m[3] || 0)] : [0, 0, 0];
+    }
+    function cmp(a, b) {
+      const pa = parseVer(a), pb = parseVer(b);
+      for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pb[i] - pa[i];
+      return 0;
+    }
+    function aliasesOf(v) {
+      const n = norm(v);
+      return n === "27.01" ? ["27.01", "27.0.1"] : [n];
+    }
+    function isPinnedYes(v) { return aliasesOf(PINNED_YES.version).includes(norm(v)); }
+    function pinnedNo(v) { return PINNED_NO.find((p) => p.aliases.includes(norm(v))); }
+    function findToolName(text) {
+      for (const name of TOOL_NAMES) {
+        if (new RegExp("\\b" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(text)) return name;
+      }
+      return null;
+    }
+    function officialLink(name, fallback) {
+      return TOOL_LINKS[String(name || "").toLowerCase()] || fallback || "";
+    }
+    function extractIosSections(text) {
+      const chunks = String(text).split(/\n(?=#{1,3}\s+)/);
+      const picked = chunks.filter((c) => /#{1,3}\s*(iOS|iPadOS)\b/i.test(c) || /^\s*(iOS|iPadOS)\b/i.test(c));
+      return picked.join("\n") || text;
+    }
+    function versionHits(text) {
+      const scoped = extractIosSections(text).replace(/<[^>]+>/g, " ");
+      const hits = [];
+      const lineRe = /(^|\n).{0,40}?\b((?:1[5-9]|2[0-9])\.\d+(?:\.\d+)?)\b.{0,180}/g;
+      let m;
+      while ((m = lineRe.exec("\n" + scoped))) {
+        const version = norm(m[2]);
+        const line = m[0];
+        if (/tvOS|watchOS|audioOS|bridgeOS|visionOS/i.test(line) && !/iOS|iPadOS/i.test(line)) continue;
+        const tool = findToolName(line);
+        const denied = /no tool available|not (?:currently )?jailbreakable|no public jailbreak|unsupported/i.test(line);
+        const allowed = !!(tool && !denied && /(yes|supported|semi-|jailbreakable)/i.test(line));
+        hits.push({ version, tool: allowed ? tool : null, denied, allowed, line: line.slice(0, 220) });
+      }
+      return hits;
+    }
+
+    async function fetchRaw(url) {
+      const attempts = [
+        url,
+        "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+        "https://corsproxy.io/?" + encodeURIComponent(url)
+      ];
+      let lastErr = "unreachable";
+      for (const attempt of attempts) {
+        try {
+          const res = await fetch(attempt, { cache: "no-store" });
+          if (!res.ok) { lastErr = "HTTP " + res.status; continue; }
+          return await res.text();
+        } catch (err) {
+          lastErr = err && err.message ? err.message : "network error";
+        }
+      }
+      throw new Error(lastErr);
+    }
+
+    async function wikiPage(page) {
+      const api = "https://theapplewiki.com/w/api.php?action=parse&page=" + encodeURIComponent(page) + "&prop=wikitext|text&format=json&origin=*";
+      const data = JSON.parse(await fetchRaw(api));
+      const wikitext = (data.parse && data.parse.wikitext && (data.parse.wikitext["*"] || data.parse.wikitext)) || "";
+      const html = (data.parse && data.parse.text && (data.parse.text["*"] || data.parse.text)) || "";
+      return "# iOS\n" + wikitext + "\n# iPadOS\n" + html;
+    }
+
+    async function checkWikis() {
+      const pages = ["Jailbreak/26.x", "Jailbreak/27.x"];
+      const texts = [];
+      const notes = [];
+      for (const page of pages) {
+        try { texts.push(await wikiPage(page)); notes.push(page + " read"); }
+        catch (err) { notes.push(page + " " + (err.message || "failed")); }
+      }
+      return { hits: texts.flatMap(versionHits), detail: notes.join(" · ") };
+    }
+
+    async function checkRedditWiki() {
+      const urls = [
+        "https://www.reddit.com/r/jailbreak/wiki/index.json",
+        "https://old.reddit.com/r/jailbreak/wiki/index.json"
+      ];
+      let text = "";
+      for (const url of urls) {
+        try {
+          const data = JSON.parse(await fetchRaw(url));
+          text = (data.data && (data.data.content_md || data.data.content_html)) || "";
+          if (text) break;
+        } catch (e) {}
+      }
+      if (!text) throw new Error("wiki unavailable");
+      return { hits: versionHits("# iOS\n" + text), detail: "r/jailbreak wiki scanned" };
+    }
+
+    async function checkAppleDB() {
+      const data = JSON.parse(await fetchRaw("https://api.appledb.dev/jailbreak/main.json"));
+      const list = Array.isArray(data) ? data : Object.values(data);
+      const hits = [];
+      for (const jb of list) {
+        const devices = [];
+        (jb.compatibility || []).forEach((c) => (c.devices || []).forEach((d) => devices.push(d)));
+        ((jb.info && jb.info.guide) || []).forEach((g) => (g.devices || []).forEach((d) => devices.push(d)));
+        const hasA12 = devices.some((d) => A12_IDS.has(d)) || /A12/i.test(JSON.stringify(jb.info || {}));
+        if (!hasA12) continue;
+        const range = (jb.info && Array.isArray(jb.info.firmwares)) ? jb.info.firmwares : [];
+        const note = (jb.info && jb.info.notes) || "";
+        const mentioned = String(note + " " + range.join(" ")).match(/\b(?:1[5-9]|2[0-9])\.\d+(?:\.\d+)?\b/g) || [];
+        mentioned.forEach((v) => {
+          hits.push({ version: norm(v), tool: jb.name, allowed: false, denied: false, note: true });
+        });
+        if (range.length === 2) {
+          hits.push({ version: norm(range[1]), tool: jb.name, allowed: false, denied: false, note: true });
+        }
+      }
+      return { hits, detail: "AppleDB jailbreak records scanned" };
+    }
+
+    async function checkDopamineReadme() {
+      const raw = await fetchRaw("https://cdn.jsdelivr.net/gh/opa334/Dopamine@master/README.md");
+      return { hits: versionHits(raw), detail: "Dopamine README scanned" };
+    }
+
+    const SOURCES = [
+      { id: "wiki", name: "The Apple Wiki jailbreak charts", href: "https://theapplewiki.com/wiki/Jailbreak/26.x", run: checkWikis },
+      { id: "reddit", name: "r/jailbreak wiki", href: "https://www.reddit.com/r/jailbreak/wiki/index", run: checkRedditWiki },
+      { id: "appledb", name: "AppleDB jailbreak database", href: "https://appledb.dev/jailbreak/Dopamine", run: checkAppleDB },
+      { id: "dopamine", name: "Dopamine project README", href: "https://github.com/opa334/Dopamine", run: checkDopamineReadme }
+    ];
+
+    function mergeHits(allHits) {
+      const map = new Map();
+      const remember = (version, partial) => {
+        const key = norm(version);
+        if (!key) return;
+        const cur = map.get(key) || { version: key, supported: null, status: "", tool: "", url: "" };
+        Object.assign(cur, partial);
+        map.set(key, cur);
+      };
+
+      remember(PINNED_YES.version, { supported: true, status: PINNED_YES.label, pinned: true });
+      PINNED_NO.forEach((p) => remember(p.version, { supported: false, status: p.label, pinned: true }));
+
+      allHits.forEach((hit) => {
+        const key = norm(hit.version);
+        if (isPinnedYes(key) || pinnedNo(key)) return;
+        if (hit.allowed) {
+          remember(key, {
+            supported: true,
+            status: (hit.tool ? hit.tool + " · " : "") + "Listed as jailbreakable",
+            tool: hit.tool || "",
+            url: officialLink(hit.tool)
+          });
+        } else if (hit.denied) {
+          remember(key, { supported: false, status: "No tool available" });
+        }
+      });
+      return [...map.values()];
+    }
+
+    function renderList(el, rows) {
+      if (!rows.length) {
+        el.innerHTML = '<div class="empty">None determined yet.</div>';
+        return;
+      }
+      el.innerHTML = rows.map((row) => {
+        const extra = row.url
+          ? '<br><a href="' + row.url + '" target="_blank" rel="noopener noreferrer">' + (row.tool || row.url) + "</a>"
+          : "";
+        return '<div class="row"><span class="ver">' + row.version + '</span><span class="st">' + row.status + extra + "</span></div>";
+      }).join("");
+    }
+
+    function renderSources(rows) {
+      $("sourceList").innerHTML = rows.map((row) => {
+        const state = row.error ? "Couldn’t read · " + row.error : (row.detail || "Checked");
+        return '<div class="src"><div>' + row.name + '<br><a href="' + row.href + '" target="_blank" rel="noopener noreferrer">Open source</a></div><div>' + state + "</div></div>";
+      }).join("");
+    }
+
+    async function refresh() {
+      $("refresh").disabled = true;
+      $("hud").dataset.state = "checking";
+      $("headline").textContent = "SCANNING";
+      $("subhead").textContent = "PUBLIC SOURCES";
+      $("hudTitle").textContent = "Acquiring signal…";
+      const sourceRows = SOURCES.map((s) => ({ name: s.name, href: s.href, detail: "", error: "" }));
+      renderSources(sourceRows);
+
+      const bags = await Promise.all(SOURCES.map(async (src, i) => {
+        try {
+          const result = await src.run();
+          sourceRows[i].detail = result.detail || "Checked";
+          return result.hits || [];
+        } catch (err) {
+          sourceRows[i].error = err && err.message ? err.message : "failed";
+          return [];
+        }
+      }));
+      renderSources(sourceRows);
+
+      const versions = mergeHits(bags.flat());
+      const yes = versions.filter((v) => v.supported).sort((a, b) => {
+        if (isPinnedYes(a.version)) return -1;
+        if (isPinnedYes(b.version)) return 1;
+        return cmp(a.version, b.version);
+      });
+      const no = versions.filter((v) => !v.supported).sort((a, b) => cmp(a.version, b.version));
+      renderList($("yesList"), yes);
+      renderList($("noList"), no);
+
+      $("checked").textContent = new Date().toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+      const lead = yes[0];
+      if (lead) {
+        $("hud").dataset.state = "available";
+        $("headline").textContent = "PATH FOUND";
+        $("subhead").textContent = "iOS " + lead.version;
+        $("hudTitle").textContent = "Jailbreakable path: iOS " + lead.version;
+        $("hudDetail").textContent = lead.status + ". Unsupported versions are listed separately, including 26.5.2 and 26.0.";
+      } else {
+        $("hud").dataset.state = "none";
+        $("headline").textContent = "NO LOCK";
+        $("subhead").textContent = "KEEP SCANNING";
+        $("hudTitle").textContent = "No jailbreak path listed";
+        $("hudDetail").textContent = "Public sources did not confirm a compatible tool yet.";
+      }
+      $("refresh").disabled = false;
+    }
+
+    (function particles() {
+      const c = $("fx");
+      const ctx = c.getContext("2d");
+      let dots = [];
+      function resize() {
+        c.width = window.innerWidth * devicePixelRatio;
+        c.height = window.innerHeight * devicePixelRatio;
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        dots = Array.from({ length: 70 }, () => ({
+          x: Math.random() * innerWidth,
+          y: Math.random() * innerHeight,
+          r: Math.random() * 1.6 + 0.3,
+          v: Math.random() * 0.25 + 0.05,
+          hue: Math.random() > .5 ? "rgba(0,243,255," : "rgba(255,43,214,"
+        }));
+      }
+      function tick() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        dots.forEach((d) => {
+          d.y -= d.v;
+          if (d.y < -4) { d.y = innerHeight + 4; d.x = Math.random() * innerWidth; }
+          ctx.fillStyle = d.hue + (0.25 + d.r / 4) + ")";
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
+        });
+        requestAnimationFrame(tick);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+      tick();
+    })();
+
+    $("refresh").addEventListener("click", refresh);
+    renderList($("yesList"), [{ version: PINNED_YES.version, status: PINNED_YES.label }]);
+    renderList($("noList"), PINNED_NO.map((p) => ({ version: p.version, status: p.label })));
+    refresh();
+  </script>
+</body>
+</html>
