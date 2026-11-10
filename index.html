@@ -18,8 +18,8 @@
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{font-family:"Share Tech Mono",ui-monospace,monospace;color:var(--ink);background:var(--bg);overflow-x:hidden}
-#fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.22),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.18),transparent 32%),radial-gradient(circle at 50% 110%,rgba(57,255,136,.1),transparent 40%);animation:drift 16s ease-in-out infinite alternate;filter:blur(8px)}
+
+.aurora{position:absolute;inset:0 0 auto;height:100vh;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.18),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.15),transparent 32%),radial-gradient(circle at 50% 100%,rgba(57,255,136,.08),transparent 40%);filter:blur(8px)}
 @keyframes drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.06)}}
 main{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}
 .topline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px;color:var(--cyan);letter-spacing:.18em;font-size:.72rem;text-transform:uppercase}
@@ -45,7 +45,7 @@ button{appearance:none;border:1px solid var(--cyan);background:linear-gradient(9
 button:disabled{opacity:.5;cursor:wait}
 .filter{width:100%;margin:14px 0 0;padding:10px 12px;background:rgba(8,6,22,.78);border:1px solid rgba(0,243,255,.28);color:var(--ink);font:inherit}
 .boards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}@media(max-width:700px){.boards{grid-template-columns:1fr}}
-.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;max-height:min(70vh,640px);overflow:auto}
+.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;max-height:none;overflow:visible}
 .board.yes{border-color:rgba(57,255,136,.35);box-shadow:0 0 18px rgba(57,255,136,.08)}.board.no{border-color:rgba(255,43,214,.28)}
 .board h3{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.16em;margin:0 0 10px;padding-bottom:8px;background:rgba(8,6,22,.98)}
 .board.yes h3{color:var(--lime)}.board.no h3{color:var(--magenta)}
@@ -58,7 +58,7 @@ button:disabled{opacity:.5;cursor:wait}
 </style>
 </head>
 <body>
-<canvas id="fx"></canvas><div class="aurora"></div>
+<div class="aurora" aria-hidden="true"></div>
 <main>
   <div class="topline"><span>A12 / A12X · SIGNAL WATCH</span><span>iOS 1 — LATEST</span></div>
   <h1>JAILBREAK TRACKER</h1>
@@ -302,22 +302,6 @@ async function refresh(){
 $("filter").addEventListener("input",()=>paint(currentRows.length?currentRows:VERSION_CATALOG.map(fallbackFor)));
 $("refresh").addEventListener("click",refresh);
 
-(function particles(){
-  const canvas=$("fx"),ctx=canvas.getContext("2d");let dots=[];
-  function resize(){
-    const ratio=Math.min(window.devicePixelRatio||1,2);
-    canvas.width=innerWidth*ratio;canvas.height=innerHeight*ratio;
-    ctx.setTransform(ratio,0,0,ratio,0,0);
-    dots=Array.from({length:70},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.6+.3,v:Math.random()*.25+.05,hue:Math.random()>.5?"rgba(0,243,255,":"rgba(255,43,214,"}));
-  }
-  function tick(){
-    ctx.clearRect(0,0,innerWidth,innerHeight);
-    dots.forEach(d=>{d.y-=d.v;if(d.y< -4){d.y=innerHeight+4;d.x=Math.random()*innerWidth;}
-      ctx.fillStyle=d.hue+(0.25+d.r/4)+")";ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill();});
-    requestAnimationFrame(tick);
-  }
-  resize();addEventListener("resize",resize);tick();
-})();
 
 paint(VERSION_CATALOG.map(fallbackFor));
 loadViews();
