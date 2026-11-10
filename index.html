@@ -11,15 +11,15 @@
 <meta name="apple-mobile-web-app-title" content="JB Tracker">
 <meta name="theme-color" content="#05010d">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22A12%20Signal%20Tracker%22%2C%22short_name%22%3A%22JB%20Tracker%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305010d%22%2C%22theme_color%22%3A%22%2305010d%22%2C%22start_url%22%3A%22.%22%7D">
-<script src="https://page-views-api.ratneshc.com/script" data-site="deluxefarms.github.io" data-path="/" defer></script>
+<script src="https://page-views-api.ratneshc.com/script" data-site="deluxefarms.github.io" data-path="/" data-debug="true" defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap');
 :root{--bg:#05010d;--panel:rgba(8,6,22,.78);--cyan:#00f3ff;--magenta:#ff2bd6;--lime:#39ff88;--ink:#e8f7ff;--muted:#8b90b8;--danger:#ff4d6d}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{font-family:"Share Tech Mono",ui-monospace,monospace;color:var(--ink);background:var(--bg);overflow-x:hidden}
-
-.aurora{position:absolute;inset:0 0 auto;height:100vh;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.18),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.15),transparent 32%),radial-gradient(circle at 50% 100%,rgba(57,255,136,.08),transparent 40%);filter:blur(8px)}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.22),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.18),transparent 32%),radial-gradient(circle at 50% 110%,rgba(57,255,136,.1),transparent 40%);animation:drift 16s ease-in-out infinite alternate;filter:blur(8px)}
 @keyframes drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.06)}}
 main{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}
 .topline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px;color:var(--cyan);letter-spacing:.18em;font-size:.72rem;text-transform:uppercase}
@@ -45,20 +45,25 @@ button{appearance:none;border:1px solid var(--cyan);background:linear-gradient(9
 button:disabled{opacity:.5;cursor:wait}
 .filter{width:100%;margin:14px 0 0;padding:10px 12px;background:rgba(8,6,22,.78);border:1px solid rgba(0,243,255,.28);color:var(--ink);font:inherit}
 .boards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}@media(max-width:700px){.boards{grid-template-columns:1fr}}
-.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;max-height:none;overflow:visible}
+.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;min-width:0;display:flex;flex-direction:column;max-height:min(70vh,640px);overflow:hidden}
 .board.yes{border-color:rgba(57,255,136,.35);box-shadow:0 0 18px rgba(57,255,136,.08)}.board.no{border-color:rgba(255,43,214,.28)}
-.board h3{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.16em;margin:0 0 10px;padding-bottom:8px;background:rgba(8,6,22,.98)}
+.board h3{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.12em;line-height:1.3;margin:0 0 8px;padding:0 0 8px;flex:0 0 auto}
+/* Only the version entries scroll; the panel title stays visible. */
+.board>div[id$="List"]{height:min(58vh,520px);min-height:120px;max-height:min(58vh,520px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scrollbar-gutter:stable}
+.board>div[id$="List"]::-webkit-scrollbar{width:7px}
+.board>div[id$="List"]::-webkit-scrollbar-thumb{background:rgba(0,243,255,.35);border-radius:8px}
+.board.no>div[id$="List"]::-webkit-scrollbar-thumb{background:rgba(255,43,214,.35)}
 .board.yes h3{color:var(--lime)}.board.no h3{color:var(--magenta)}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.92rem}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.92rem}.row .ver{flex:0 0 auto}.row .st{min-width:0;max-width:72%;overflow-wrap:anywhere}
 .ver{font-family:Orbitron,sans-serif;letter-spacing:.04em}.st{color:var(--muted);text-align:right;font-size:.78rem}.row a,.src a{color:var(--cyan)}.empty{color:var(--muted);padding:8px 0}
 .sources{margin-top:18px}.sources h2{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.16em;color:var(--cyan)}
 .src{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.06);color:var(--muted);font-size:.84rem}
 .hint{margin-top:16px;color:var(--muted);font-size:.8rem;line-height:1.45}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+/* Keep the tracker animations active, including when the device requests reduced motion. */
 </style>
 </head>
 <body>
-<div class="aurora" aria-hidden="true"></div>
+<canvas id="fx"></canvas><div class="aurora"></div>
 <main>
   <div class="topline"><span>A12 / A12X · SIGNAL WATCH</span><span>iOS 1 — LATEST</span></div>
   <h1>JAILBREAK TRACKER</h1>
@@ -96,50 +101,30 @@ const VIEW_PATH = "/";
 async function loadViews() {
   const output = document.getElementById("views");
   if (!output) return;
-
-  // The official script above records the visit. This function only reads
-  // the total; it must never call /track or increment the counter itself.
-  const params = new URLSearchParams({ site: VIEW_SITE_ID, path: VIEW_PATH });
-  const url = "https://page-views-api.ratneshc.com/api/v1/views?" + params.toString();
   output.textContent = "Loading…";
-
-  let lastError;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      // Give the tracking script time to finish its independent request.
-      await new Promise(resolve => setTimeout(resolve, attempt === 0 ? 1500 : 2000));
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      let response;
-      try {
-        response = await fetch(url, {
-          method: "GET",
-          cache: "no-store",
-          mode: "cors",
-          signal: controller.signal
-        });
-      } finally {
-        clearTimeout(timeout);
-      }
-      if (!response.ok) throw new Error("Page Views API returned HTTP " + response.status);
-      const data = await response.json();
-      const count = Number(data.views);
-      if (!Number.isSafeInteger(count) || count < 0) {
-        throw new Error("The API returned an invalid view count");
-      }
-      output.textContent = count.toLocaleString();
-      output.title = "Total recorded views for " + VIEW_SITE_ID + VIEW_PATH;
-      return;
-    } catch (error) {
-      lastError = error;
-    }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    // Let the independent tracker send its visit request; don't block on script load.
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const params = new URLSearchParams({site: VIEW_SITE_ID, path: VIEW_PATH});
+    const response = await fetch(
+      "https://page-views-api.ratneshc.com/api/v1/views?" + params.toString(),
+      {method: "GET", cache: "no-store", mode: "cors", signal: controller.signal}
+    );
+    if (!response.ok) throw new Error("Page Views API returned HTTP " + response.status);
+    const data = await response.json();
+    const count = Number(data.views);
+    if (!Number.isFinite(count) || count < 0) throw new Error("Invalid view count returned by API");
+    output.textContent = count.toLocaleString();
+    output.title = "Total views for " + VIEW_SITE_ID + VIEW_PATH;
+  } catch (error) {
+    console.error("Page-view counter error:", error);
+    output.textContent = "Unavailable";
+    output.title = error.name === "AbortError" ? "Page-view request timed out" : (error.message || "Page-view counter unavailable");
+  } finally {
+    clearTimeout(timeout);
   }
-
-  console.error("Page-view counter error:", lastError);
-  output.textContent = "Unavailable";
-  output.title = lastError?.name === "AbortError"
-    ? "Page-view request timed out"
-    : (lastError?.message || "Page-view counter unavailable");
 }
 
 const VERSION_CATALOG = `
@@ -322,6 +307,22 @@ async function refresh(){
 $("filter").addEventListener("input",()=>paint(currentRows.length?currentRows:VERSION_CATALOG.map(fallbackFor)));
 $("refresh").addEventListener("click",refresh);
 
+(function particles(){
+  const canvas=$("fx"),ctx=canvas.getContext("2d");let dots=[];
+  function resize(){
+    const ratio=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*ratio;canvas.height=innerHeight*ratio;
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+    dots=Array.from({length:70},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.6+.3,v:Math.random()*.25+.05,hue:Math.random()>.5?"rgba(0,243,255,":"rgba(255,43,214,"}));
+  }
+  function tick(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    dots.forEach(d=>{d.y-=d.v;if(d.y< -4){d.y=innerHeight+4;d.x=Math.random()*innerWidth;}
+      ctx.fillStyle=d.hue+(0.25+d.r/4)+")";ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill();});
+    requestAnimationFrame(tick);
+  }
+  resize();addEventListener("resize",resize);tick();
+})();
 
 paint(VERSION_CATALOG.map(fallbackFor));
 loadViews();
