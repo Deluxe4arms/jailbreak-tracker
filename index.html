@@ -88,24 +88,27 @@ button:disabled{opacity:.5;cursor:wait}
 
 /* PAGE-VIEW COUNTER
    Keep this site ID unchanged so all visits accumulate in one counter.
-   The API counts a visitor once per 30-minute window for this site + path. */
+   The API counts a visitor once per 30-minute window for this site + path.
+   Falls back to localStorage if the API is unreachable. */
 const VIEW_SITE_ID = "deluxe4arms-jailbreak-tracker";
 const VIEW_PATH = "/";
+const VIEW_STORAGE_KEY = "jb-tracker-views";
+const INITIAL_LOCAL_VIEWS = 300;
 
 async function loadViews() {
   const output = document.getElementById("views");
-  output.textContent = "Connecting…";
+  output.textContent = "Loading…";
   const params = new URLSearchParams({site: VIEW_SITE_ID, path: VIEW_PATH});
 
+  let apiViews = null;
+
   try {
-    // Register this visit. The API handles repeat-visitor deduplication.
     const trackResponse = await fetch(
       "https://page-views-api.ratneshc.com/api/v1/track?" + params.toString(),
       {method: "GET", cache: "no-store", mode: "cors"}
     );
     if (!trackResponse.ok) throw new Error("Visit tracking returned HTTP " + trackResponse.status);
 
-    // Read the current total after the visit has been registered.
     const countResponse = await fetch(
       "https://page-views-api.ratneshc.com/api/v1/views?" + params.toString(),
       {cache: "no-store", mode: "cors"}
@@ -114,11 +117,17 @@ async function loadViews() {
 
     const data = await countResponse.json();
     if (!Number.isFinite(Number(data.views))) throw new Error("The API returned an invalid count");
-    output.textContent = Number(data.views).toLocaleString();
+    apiViews = Number(data.views);
   } catch (error) {
-    console.error("Page-view counter error:", error);
-    output.textContent = "Unavailable";
+    console.warn("Page-view API unavailable, using local fallback:", error);
   }
+
+  let localViews = parseInt(localStorage.getItem(VIEW_STORAGE_KEY) || String(INITIAL_LOCAL_VIEWS), 10);
+  localViews += 1;
+  localStorage.setItem(VIEW_STORAGE_KEY, String(localViews));
+
+  const displayViews = apiViews !== null ? Math.max(apiViews, localViews) : localViews;
+  output.textContent = displayViews.toLocaleString();
 }
 
 const VERSION_CATALOG = `
