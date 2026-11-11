@@ -11,7 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="JB Tracker">
 <meta name="theme-color" content="#05010d">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22A12%20Signal%20Tracker%22%2C%22short_name%22%3A%22JB%20Tracker%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305010d%22%2C%22theme_color%22%3A%22%2305010d%22%2C%22start_url%22%3A%22.%22%7D">
-<script src="https://page-views-api.ratneshc.com/script" data-site="deluxefarms.github.io" data-path="/" data-debug="true" defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap');
 :root{--bg:#05010d;--panel:rgba(8,6,22,.78);--cyan:#00f3ff;--magenta:#ff2bd6;--lime:#39ff88;--ink:#e8f7ff;--muted:#8b90b8;--danger:#ff4d6d}
@@ -19,8 +18,8 @@
 html,body{margin:0;min-height:100%}
 body{font-family:"Share Tech Mono",ui-monospace,monospace;color:var(--ink);background:var(--bg);overflow-x:hidden}
 #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.22),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.18),transparent 32%),radial-gradient(circle at 50% 110%,rgba(57,255,136,.1),transparent 40%);animation:drift 24s ease-in-out infinite alternate;filter:blur(8px)}
-@keyframes drift{from{transform:translate3d(-1%,-.5%,0) scale(1)}to{transform:translate3d(1%,1%,0) scale(1.03)}}
+.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%,rgba(255,43,214,.22),transparent 36%),radial-gradient(circle at 85% 0%,rgba(0,243,255,.18),transparent 32%),radial-gradient(circle at 50% 110%,rgba(57,255,136,.1),transparent 40%);animation:drift 16s ease-in-out infinite alternate;filter:blur(8px)}
+@keyframes drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.06)}}
 main{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}
 .topline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px;color:var(--cyan);letter-spacing:.18em;font-size:.72rem;text-transform:uppercase}
 h1{font-family:Orbitron,sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2.15rem);letter-spacing:.04em;margin:0 0 .4rem;text-shadow:0 0 18px rgba(0,243,255,.45),0 0 28px rgba(255,43,214,.25)}
@@ -30,8 +29,8 @@ h1{font-family:Orbitron,sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2.
 @keyframes scan{to{background-position:0 80px}}
 @media(max-width:700px){.hud{grid-template-columns:1fr;justify-items:center}.topline{font-size:.62rem}}
 .radar-wrap{position:relative;width:210px;height:210px}.radar{width:210px;height:210px;border-radius:50%;border:1px solid rgba(0,243,255,.4);box-shadow:0 0 24px rgba(0,243,255,.18),inset 0 0 30px rgba(255,43,214,.12);position:relative;overflow:hidden;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 26px,rgba(0,243,255,.12) 27px 28px),radial-gradient(circle at 50% 50%,rgba(8,16,32,.2),rgba(2,0,10,.92))}
-.sweep{position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0 72%,rgba(0,243,255,0) 78%,rgba(0,243,255,.55) 100%);animation:spin 4s linear infinite}
-.pulse{position:absolute;inset:18%;border:1px solid rgba(255,43,214,.7);border-radius:50%;animation:ping 3.2s ease-out infinite}
+.sweep{position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0 72%,rgba(0,243,255,0) 78%,rgba(0,243,255,.55) 100%);animation:spin 2.8s linear infinite}
+.pulse{position:absolute;inset:18%;border:1px solid rgba(255,43,214,.7);border-radius:50%;animation:ping 2.2s ease-out infinite}
 .radar-core{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:24px;font-family:Orbitron,sans-serif;z-index:2}
 .radar-core strong{display:block;font-size:.95rem;letter-spacing:.08em;text-shadow:0 0 12px currentColor}.radar-core span{display:block;margin-top:6px;font-size:.68rem;letter-spacing:.16em;color:var(--muted)}
 @keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.25);opacity:0}}
@@ -45,21 +44,16 @@ button{appearance:none;border:1px solid var(--cyan);background:linear-gradient(9
 button:disabled{opacity:.5;cursor:wait}
 .filter{width:100%;margin:14px 0 0;padding:10px 12px;background:rgba(8,6,22,.78);border:1px solid rgba(0,243,255,.28);color:var(--ink);font:inherit}
 .boards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}@media(max-width:700px){.boards{grid-template-columns:1fr}}
-.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;min-width:0;display:flex;flex-direction:column;height:min(42vh,390px);max-height:390px;overflow:hidden}
+.board{border:1px solid rgba(0,243,255,.2);background:var(--panel);padding:14px;max-height:min(70vh,640px);overflow:auto}
 .board.yes{border-color:rgba(57,255,136,.35);box-shadow:0 0 18px rgba(57,255,136,.08)}.board.no{border-color:rgba(255,43,214,.28)}
-.board h3{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.12em;line-height:1.3;margin:0 0 8px;padding:0 0 8px;flex:0 0 auto}
-/* Only the version entries scroll; the panel title stays visible. */
-.board>div[id$="List"]{flex:1 1 auto;min-height:0;height:0;max-height:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scrollbar-gutter:stable}
-.board>div[id$="List"]::-webkit-scrollbar{width:7px}
-.board>div[id$="List"]::-webkit-scrollbar-thumb{background:rgba(0,243,255,.35);border-radius:8px}
-.board.no>div[id$="List"]::-webkit-scrollbar-thumb{background:rgba(255,43,214,.35)}
+.board h3{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.16em;margin:0 0 10px;position:sticky;top:0;padding-bottom:8px;background:linear-gradient(180deg,rgba(8,6,22,.98),rgba(8,6,22,.9))}
 .board.yes h3{color:var(--lime)}.board.no h3{color:var(--magenta)}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.92rem}.row .ver{flex:0 0 auto}.row .st{min-width:0;max-width:72%;overflow-wrap:anywhere}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.92rem}
 .ver{font-family:Orbitron,sans-serif;letter-spacing:.04em}.st{color:var(--muted);text-align:right;font-size:.78rem}.row a,.src a{color:var(--cyan)}.empty{color:var(--muted);padding:8px 0}
 .sources{margin-top:18px}.sources h2{font-family:Orbitron,sans-serif;font-size:.78rem;letter-spacing:.16em;color:var(--cyan)}
 .src{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.06);color:var(--muted);font-size:.84rem}
 .hint{margin-top:16px;color:var(--muted);font-size:.8rem;line-height:1.45}
-}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -93,37 +87,37 @@ button:disabled{opacity:.5;cursor:wait}
 "use strict";
 
 /* PAGE-VIEW COUNTER
-   The tracking script is loaded independently in the document head.
-   Reading the count never waits for that script to finish loading. */
-const VIEW_SITE_ID = "deluxefarms.github.io";
+   Keep this site ID unchanged so all visits accumulate in one counter.
+   The API counts a visitor once per 30-minute window for this site + path. */
+const VIEW_SITE_ID = "deluxe4arms-jailbreak-tracker";
 const VIEW_PATH = "/";
 
 async function loadViews() {
   const output = document.getElementById("views");
-  if (!output) return;
-  output.textContent = "Loading…";
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
+  output.textContent = "Connecting…";
+  const params = new URLSearchParams({site: VIEW_SITE_ID, path: VIEW_PATH});
+
   try {
-    // Let the independent tracker send its visit request; don't block on script load.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const params = new URLSearchParams({site: VIEW_SITE_ID, path: VIEW_PATH});
-    const response = await fetch(
-      "https://page-views-api.ratneshc.com/api/v1/views?" + params.toString(),
-      {method: "GET", cache: "no-store", mode: "cors", signal: controller.signal}
+    // Register this visit. The API handles repeat-visitor deduplication.
+    const trackResponse = await fetch(
+      "https://page-views-api.ratneshc.com/api/v1/track?" + params.toString(),
+      {method: "GET", cache: "no-store", mode: "cors"}
     );
-    if (!response.ok) throw new Error("Page Views API returned HTTP " + response.status);
-    const data = await response.json();
-    const count = Number(data.views);
-    if (!Number.isFinite(count) || count < 0) throw new Error("Invalid view count returned by API");
-    output.textContent = count.toLocaleString();
-    output.title = "Total views for " + VIEW_SITE_ID + VIEW_PATH;
+    if (!trackResponse.ok) throw new Error("Visit tracking returned HTTP " + trackResponse.status);
+
+    // Read the current total after the visit has been registered.
+    const countResponse = await fetch(
+      "https://page-views-api.ratneshc.com/api/v1/views?" + params.toString(),
+      {cache: "no-store", mode: "cors"}
+    );
+    if (!countResponse.ok) throw new Error("Counter returned HTTP " + countResponse.status);
+
+    const data = await countResponse.json();
+    if (!Number.isFinite(Number(data.views))) throw new Error("The API returned an invalid count");
+    output.textContent = Number(data.views).toLocaleString();
   } catch (error) {
     console.error("Page-view counter error:", error);
     output.textContent = "Unavailable";
-    output.title = error.name === "AbortError" ? "Page-view request timed out" : (error.message || "Page-view counter unavailable");
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
@@ -201,28 +195,22 @@ function extractHits(text){
   return hits;
 }
 async function fetchText(url){
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),6500);
-  try{
-    const response=await fetch(url,{cache:"no-store",signal:controller.signal});
-    if(!response.ok)throw new Error("HTTP "+response.status);
-    return await response.text();
-  }catch(error){
-    if(error.name==="AbortError")throw new Error("Timed out after 6.5 seconds");
-    throw error;
-  }finally{clearTimeout(timeout);}
+  const response=await fetch(url,{cache:"no-store"});
+  if(!response.ok)throw new Error("HTTP "+response.status);
+  return response.text();
 }
 async function checkAppleWiki(){
-  const pages=["12","13","14","15","16","17","18","26","27"];
-  const results=await Promise.all(pages.map(async v=>{
+  const pages=["12","13","14","15","16","17","18","26","27"],all=[],notes=[];
+  for(const v of pages){
     const page="Jailbreak/"+v+".x";
     try{
       const api="https://theapplewiki.com/w/api.php?action=parse&page="+encodeURIComponent(page)+"&prop=wikitext&format=json&origin=*";
       const data=JSON.parse(await fetchText(api));
-      return{hits:extractHits(data.parse?.wikitext?.["*"]||""),note:page+" read"};
-    }catch(e){return{hits:[],note:page+" unavailable"};}
-  }));
-  return{hits:results.flatMap(r=>r.hits),detail:results.map(r=>r.note).join(" · ")};
+      const raw=data.parse?.wikitext?.["*"]||"";
+      all.push(...extractHits(raw));notes.push(page+" read");
+    }catch(e){notes.push(page+" unavailable");}
+  }
+  return{hits:all,detail:notes.join(" · ")};
 }
 async function checkRedditWiki(){
   const urls=["https://www.reddit.com/r/jailbreak/wiki/index.json","https://old.reddit.com/r/jailbreak/wiki/index.json"];
@@ -292,8 +280,6 @@ async function refresh(){
   renderSources(sourceRows);
   const{yes}=paint(mergeHits(results.flat()));
   $("checked").textContent=new Date().toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"});
-  const successfulSources=sourceRows.filter(r=>!r.error).length;
-  if(successfulSources===0) $("hudDetail").textContent="The source check finished, but all external sources timed out or blocked browser access. The lists show the built-in catalog until a source responds.";
   if(yes.length){
     const newest=yes[0];$("hud").dataset.state="available";$("headline").textContent="PATH FOUND";
     $("subhead").textContent="iOS "+newest.version;$("hudTitle").textContent="Newest catalogued A12 / A12X path: iOS "+newest.version;
